@@ -15,18 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="d_node.h">
+    <ClInclude Include="cardGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cardGame.h">
+    <ClInclude Include="cardNames.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="node.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cardGameFlip.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cardGame.cpp">
+    <ClCompile Include="flip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

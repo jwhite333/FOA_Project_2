@@ -4,29 +4,49 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include "d_node.h"
+#include <sstream>
+#include "cardNames.h"
+#include "node.h"
 
-enum suit
-{
-	DIAMOND = 0,
-	CLUB,
-	HEART,
-	SPADE
-};
+#define SHUFFLE_ITERATIONS 100
+#define MIN_CARD_VALUE 1
+#define MAX_CARD_VALUE 13
 
 class card
 {
 private:
 	int cardValue;
-	int cardSuit;
+	suit cardSuit;
 public:
 	card(){}
 
-	//copy constrcutor for card
-	card(const card &other)
+	// Copy constrcutor for card
+	card(const card &otherCard)
 	{
-		cardValue = other.cardValue;
-		cardSuit = other.cardSuit;
+		cardValue = otherCard.cardValue;
+		cardSuit = otherCard.cardSuit;
+	}
+
+	// Constructor
+	card(int value, suit suit)
+	{
+		cardValue = value;
+		cardSuit = suit;
+	}
+
+	bool operator == (const card &otherCard)
+	{
+		if (cardValue == otherCard.cardValue && cardSuit == otherCard.cardSuit)
+			return true;
+		else
+			return false;
+	}
+
+	// Overloaded assignment operator
+	void operator = (const card &otherCard)
+	{
+		cardValue = otherCard.cardValue;
+		cardSuit = otherCard.cardSuit;
 	}
 
 	int getCardValue()
@@ -34,7 +54,7 @@ public:
 		return cardValue;
 	}
 
-	int getCardSuit()
+	suit getCardSuit()
 	{
 		return cardSuit;
 	}
@@ -44,196 +64,177 @@ public:
 		cardValue = value;
 	}
 
-	void setCardSuit(int suit)
+	void setCardSuit(suit suit)
 	{
 		cardSuit = suit;
 	}
 
+	void print()
+	{
+		std::cout << getValueName(cardValue) << " of " << getSuitName(cardSuit) << std::endl;
+	}
+
+	std::string printToString()
+	{
+		std::stringstream stream;
+		stream << getValueName(cardValue) << " of " << getSuitName(cardSuit) << std::endl;
+		return stream.str();
+	}
 
 };
+
+// Redefining linked list node name for convenience
+typedef node<card> * node_ptr;
+typedef card * card_ptr;
 
 class deck
 {
 private:
-	node<card> *pokerDeck;
-	node<card> *temp;
-	node<card> *temp2;
-	node<card> *firstCard;
-	node<card> *lastCard;
-	node<card> *newNext;
-public:
+	node_ptr topCard;
 
-	//generate a deck of card
+public:
+	int size;
+
+	// Generate a deck of cards
 	deck()
 	{
-		pokerDeck = NULL;
-		int cardIndex = 1;
-		int suitIndex = 0;
-		// call class card to generate a card and put in link list deck 
-		for (int index = 1; index < 53; index++)
+		topCard = NULL;
+
+		// Call class card to generate a card and put in link list deck
+		for (int newSuit = (int)DIAMONDS; newSuit <= (int)SPADES; newSuit++)
 		{
-			temp = new node<card>;
-			card newcard;
-			if (index == 14 || index == 27 || index == 40) {
-				cardIndex = 1;
-				suitIndex++;
+			for (int newValue = MIN_CARD_VALUE; newValue <= MAX_CARD_VALUE; newValue++)
+			{
+				// Create a new card
+				card_ptr newCard = new card(newValue, (suit)newSuit);
+
+				// Put the new card on top of the deck
+				node_ptr newNode = new node<card>(newCard, topCard);
+
+				// Set the new card as the top card
+				topCard = newNode;
+
+				// Increase the deck size
+				size++;
 			}
-			newcard.setCardValue(cardIndex);
-			newcard.setCardSuit(suit(suitIndex));
-
-			temp->nodeValue = newcard;
-			temp->next = pokerDeck;
-
-			pokerDeck = temp;
-
-			cardIndex++;
-
 		}
 	}
 
+	// Not sure what this is used for
 	deck(const deck& pokerDeck) {
 
 	}
 
+	// Print the deck
 	void print()
 	{
-		temp = new node<card>;
-		temp = pokerDeck;
-		int cardNumber;
-		std::string suitType;
+		node_ptr currentCard = topCard;
 
-		//print out the card in the current deck
-		while (temp != nullptr)
+		while (currentCard != NULL)
 		{
-			//loop through the dead
-			for(int index=1; index<=52; index++)
-			{
-				switch (temp->nodeValue.getCardSuit())
-				{
-				case 0:
-					suitType = "DIAMOND";
-					break;
-				case 1:
-					suitType = "CLUB";
-					break;
-				case 2:
-					suitType = "HEART";
-					break;
-				case 3:
-					suitType = "SPADE";
-					break;
-				}
-				cardNumber = temp->nodeValue.getCardValue();
-				if (cardNumber == 13 || cardNumber == 12 ||
-					cardNumber == 11 || cardNumber == 1)
-				{
-					if (cardNumber == 13) {
-						std::cout << "King" << " " << suitType << std::endl;
-						temp = temp->next;
-					}
-					else if (cardNumber == 12) {
-						std::cout << "Queen" << " " << suitType <<std::endl;
-						temp = temp->next;
-					}
+			std::cout << getValueName(currentCard->value->getCardValue()) << " of " << getSuitName(currentCard->value->getCardSuit()) << std::endl;
 
-					else if (cardNumber == 11)
-					{
-						std::cout << "Jack" << " " << suitType << std::endl;
-						temp = temp->next;
-					}
-
-					else
-					{
-						std::cout << "Ace" << " " << suitType << std::endl;
-						temp = temp->next;
-					}
-				}
-				else
-				{
-					std::cout << temp->nodeValue.getCardValue() << " " << suitType << std::endl;
-					temp = temp->next;
-				}
-			}
-			
-			
+			// Move to next card
+			currentCard = currentCard->next;
 		}
-		std::cout << std::endl;
+		std::cout << "Size: " << size << std::endl;
 	}
 
 	
 	card deal()
 	{
-		std::string suitType;
+		// Return the top card and remove it from the deck
+		card firstCard = *topCard->value;
 
-		//remove it from the deck
-		temp = new node<card>;
-		firstCard = new node<card>;
+		node_ptr temp = topCard->next;
 
-		temp= pokerDeck;
-		firstCard->nodeValue = pokerDeck->nodeValue;
+		// Remove the top card from the deck, and set the new topCard pointer to the second card
+		delete topCard;
+		topCard = temp;
 
-		//move the next card up
-		temp= pokerDeck->next;
-		pokerDeck = temp;
+		// Decrease size by 1
+		size--;
 
-		//put the first card at the bottom of the deck
-		replace(firstCard->nodeValue);
-
-		//return the card the was deal
-		return firstCard->nodeValue;
+		return firstCard;
 	}
 
-	//place the first card at the bottom of the deck
+	// Place a specific card at the bottom of the deck
 	void replace(card cardToReplace)
 	{
-		temp = new node<card>;
-		temp2 = new node<card>;
-		lastCard = new node<card>;
+		// Find card, while keeping track of precious card
+		node_ptr previousCard = NULL;
+		node_ptr currentCard = topCard;
+		node_ptr lastCard = NULL;
 
-		lastCard->nodeValue = cardToReplace;
-		temp = pokerDeck;
-
-		//loop until it is last card in the deck
-		while (temp->next != NULL)
+		while (currentCard->next != NULL)
 		{
-			temp2 = temp->next;
-			temp = temp2;
-			
+			// Check to see if we have found the correct card
+			if (*currentCard->value == cardToReplace)
+			{
+				lastCard = currentCard;
+
+				// Check for top card
+				if (lastCard == topCard)
+					topCard = currentCard->next;
+				break;
+			}
+
+			// Move forward one node
+			previousCard = currentCard;
+			currentCard = currentCard->next;
 		}
-		//point the next card to the last card
-		temp->next = lastCard;
+
+		// Modify the list to remove the selected card
+		if (previousCard != NULL)
+			previousCard->next = currentCard->next;
+
+		// Find the end of the list
+		while (currentCard->next != NULL)
+		{
+			currentCard = currentCard->next;
+		}
+
+		// Add the card again to the end of the list
+		if (lastCard != NULL)
+		{
+			lastCard->next = NULL;
+			currentCard->next = lastCard;
+		}
+		else
+		{
+			throw "Could not locate the card to be replaced";
+		}		
 	}
 
 	void shuffle()
 	{
-		int cardPlace;
-		temp = new node<card>;
-		temp2 = new node<card>;
-		temp = pokerDeck;
-		//shuffle the deck, 100 time moving the card
-		for (int index = 0; index < 99; index++) 
+		// Shuffle the deck by replacing random cards 100 times
+		srand((int)time(NULL));
+		for (int index = 0; index < SHUFFLE_ITERATIONS; index++)
 		{
-			//pick a random card place in the deck
-			srand((int)time(NULL));
-			cardPlace = rand() % 52 + 5;
+			// Pick a random card place in the deck
+			int cardPosition = rand() % ((int)NUM_SUITS * (int)MAX_CARD_VALUE - 1); // 51, since the last card moving would not change the deck order
 
-			for (int j=0; j < cardPlace; j++)
+			// Traverse the list cardPosition times
+			node_ptr currentCard = topCard;
+			for (int j = 0; j < cardPosition; j++)
 			{
-				if (temp->next != NULL) {
-					//store the previous node
-					temp2 = temp;
-					
-					temp = temp->next;
-
-					//next node
-					newNext = temp->next;
-				}
+				currentCard = currentCard->next;
 			}
 
-			//place the slect card to the top
-			temp2->next = newNext;
-			temp->next = pokerDeck;
-			pokerDeck = temp;
+			// Use replace to put the card at the end of the deck
+			// As a note: It is inefficient to pass the card by value, however the assignment states this as a requirement
+			if (currentCard != NULL)
+			{
+				try
+				{
+					replace(*currentCard->value);
+				}
+				catch (std::string exception)
+				{
+					std::cout << "ERROR!: " << exception << std::endl;
+				}
+			}
 		}
 	}
 
