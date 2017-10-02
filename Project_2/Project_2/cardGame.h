@@ -122,7 +122,8 @@ public:
 
 	// Not sure what this is used for
 	deck(const deck& pokerDeck) {
-
+		topCard = pokerDeck.topCard;
+		size = pokerDeck.size;
 	}
 
 	// Print the deck
@@ -140,7 +141,26 @@ public:
 		std::cout << "Size: " << size << std::endl;
 	}
 
-	
+	// Re-introduce a card at the end of the deck after it has been dealt
+	void replace(card cardToReplace)
+	{
+		// Find the end of the deck
+		node_ptr currentCard = topCard;
+		while (currentCard->next != NULL)
+		{
+			currentCard = currentCard->next;
+		}
+
+		// Create a new node and add it to the list
+		card_ptr lastCard = new card(cardToReplace);
+		node_ptr newLast = new node<card>(lastCard, NULL);
+		currentCard->next = newLast;
+
+		// Increase deck size
+		size++;
+	}
+
+	// Return the top card from the deck, and remove it from the deck
 	card deal()
 	{
 		// Return the top card and remove it from the deck
@@ -159,7 +179,7 @@ public:
 	}
 
 	// Place a specific card at the bottom of the deck
-	void replace(card cardToReplace)
+	void moveCardToBottom(card cardToMove)
 	{
 		// Find card, while keeping track of precious card
 		node_ptr previousCard = NULL;
@@ -169,7 +189,7 @@ public:
 		while (currentCard->next != NULL)
 		{
 			// Check to see if we have found the correct card
-			if (*currentCard->value == cardToReplace)
+			if (*currentCard->value == cardToMove)
 			{
 				lastCard = currentCard;
 
@@ -222,13 +242,12 @@ public:
 				currentCard = currentCard->next;
 			}
 
-			// Use replace to put the card at the end of the deck
-			// As a note: It is inefficient to pass the card by value, however the assignment states this as a requirement
+			// Use moveCardToBottom to put the card at the end of the deck
 			if (currentCard != NULL)
 			{
 				try
 				{
-					replace(*currentCard->value);
+					moveCardToBottom(*currentCard->value);
 				}
 				catch (std::string exception)
 				{

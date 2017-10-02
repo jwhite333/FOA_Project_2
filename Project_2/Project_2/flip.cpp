@@ -108,6 +108,7 @@ void updateScore(card flippedCard, int & score)
 	}
 }
 
+// Play the game
 void playFlip()
 {
 	// Play the game Flip
@@ -121,7 +122,7 @@ void playFlip()
 
 	do
 	{
-		// Check to make sure there are still cards left
+		// Check to make sure there are still cards left (if replace is not used)
 		if (deck.size <= 0)
 		{
 			std::cout << "There are no more cards left in the deck! The game is over!" << std::endl;
@@ -139,6 +140,9 @@ void playFlip()
 			// Modify score based on flipped card
 			updateScore(flippedCard, score);
 			std::cout << "Your new score is: " << score << std::endl;
+
+			// Replace the card
+			deck.replace(flippedCard);
 		}
 
 	} while (keepPlaying);
